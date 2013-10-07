@@ -10,10 +10,10 @@ object SynergyBuild extends Build {
       name := "synergy",
       organization := "net.caoticode.synergy",
       version := "0.1-SNAPSHOT",
-      scalaVersion := "2.10.3"
+      scalaVersion := "2.10.3",
       
       // dependencies
-      
+      libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.1"
     )
   )
 }
