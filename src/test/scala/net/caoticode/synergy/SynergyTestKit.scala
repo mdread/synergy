@@ -84,18 +84,34 @@ class SynergyTestKit(_system: ActorSystem) extends TestKit(_system) with WordSpe
   "the log subscriber" must {
     
     "log a message" in {
-      chm ! ChannelJoin("testchannel")
+      chm ! ChannelCreate("testchannel2")
       
-      val ChannelJoinSuccess(channel) = expectMsgType[ChannelJoinSuccess]
+      val ChannelCreated(channel) = expectMsgType[ChannelCreated]
       
       val loggerActor = system.actorOf(Props[LoggerActor])
       
       channel.tell(Subscribe(PushSubscription), loggerActor)
       
-      EventFilter.info(message = "ciao", occurrences = 3) intercept {
-    	  channel ! Publish("ciao")
-    	  channel ! Publish("ciao")
-    	  channel ! Publish("ciao")
+      EventFilter.info(message = "hello!", occurrences = 3) intercept {
+    	  channel ! Publish("hello!")
+    	  channel ! Publish("hello!")
+    	  channel ! Publish("hello!")
+      }
+    }
+    
+    "only log messages published with the same route-tag" in {
+      chm ! ChannelCreate("testchannel3")
+      
+      val ChannelCreated(channel) = expectMsgType[ChannelCreated]
+      
+      val loggerActor = system.actorOf(Props[LoggerActor])
+      
+      channel.tell(Subscribe(PushSubscription, "log"), loggerActor)
+      
+      EventFilter.info(message = "hello!", occurrences = 1) intercept {
+    	  channel ! Publish("hello!")
+    	  channel ! Publish("hello!", "myroute")
+    	  channel ! Publish("hello!", "log")
       }
     }
     
