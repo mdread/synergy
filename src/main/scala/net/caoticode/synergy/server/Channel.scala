@@ -33,7 +33,10 @@ class Channel extends Actor {
         ref ! msg
         
     case Terminated(subscriber) =>
-      
+      val toRemove = pushSubscribers.filter{ case (ref, kind) => subscriber == ref }
+      toRemove foreach { e =>
+        pushSubscribers.remove(e)
+      }
   }
   
 }
