@@ -26,6 +26,7 @@ package object synergy {
     case class ChannelJoin(name: String)
     case class ChannelLeave(name: String)
     case class ChannelExists(name: String)
+    case class ChannelJoinCreate(name: String)
     
     // messages to clients
     case class ChannelJoinSuccess(channel: ActorRef)

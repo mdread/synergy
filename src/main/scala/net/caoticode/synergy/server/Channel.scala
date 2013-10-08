@@ -3,6 +3,7 @@ package net.caoticode.synergy.server
 import akka.actor.{ Actor, ActorRef }
 import net.caoticode.synergy.Channel2ClientProtocol._
 import scala.collection.mutable.{Set => MutableSet}
+import akka.actor.Terminated
 
 class Channel extends Actor {
 
@@ -12,6 +13,7 @@ class Channel extends Actor {
   def receive = {
     case Subscribe(kind, routingTag) => kind match {
       case PushSubscription =>
+        context.watch(sender)
         pushSubscribers.add((sender, routingTag))
         
       case PullSubscription =>
@@ -29,6 +31,9 @@ class Channel extends Actor {
     case Publish(msg, routingTag) =>
       for((ref, tag) <- pushSubscribers if tag == routingTag)
         ref ! msg
+        
+    case Terminated(subscriber) =>
+      
   }
   
 }

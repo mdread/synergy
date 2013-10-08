@@ -5,7 +5,7 @@ import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
 import akka.util.Timeout
 import akka.pattern.ask
-import net.caoticode.synergy.ChannelMasterProtocol.{ ChannelCreate, ChannelCreated }
+import net.caoticode.synergy.ChannelMasterProtocol._
 import akka.actor.ActorRef
 import scala.concurrent.Await
 import scala.concurrent.Future
@@ -22,7 +22,7 @@ class SynergyClient(conf: Option[ClientConfig] = None) {
     ConfigFactory.parseString(s"""
       akka.remote.netty.tcp.hostname="${config.myHost}"
       akka.remote.netty.tcp.port=${config.myPort}
-      serverConnection = akka.tcp://SynergyServer@${config.serverHost}:${config.serverPort}/user/channelmaster
+      serverConnection = "akka.tcp://SynergyServer@${config.serverHost}:${config.serverPort}/user/channelmaster"
      """)
   }.getOrElse(ConfigFactory.empty())
 
@@ -38,6 +38,16 @@ class SynergyClient(conf: Option[ClientConfig] = None) {
     val res = (channelMaster ? ChannelCreate(name)).mapTo[ChannelCreated]
 
     new ChannelClient(res.map(_.channel), system)
+  }
+  
+  def joinOrCreateChannel(name: String): ChannelClient = {
+    val res = (channelMaster ? ChannelJoinCreate(name)).mapTo[ChannelJoinSuccess]
+
+    new ChannelClient(res.map(_.channel), system)
+  }
+  
+  def deleteChannel(name: String): Unit = {
+    channelMaster ! ChannelDelete(name)
   }
 
   def shutdown(): Unit = {
