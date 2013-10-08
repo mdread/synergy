@@ -1,5 +1,6 @@
 import sbt._
 import sbt.Keys._
+import com.typesafe.sbteclipse.plugin.EclipsePlugin._
 
 object SynergyBuild extends Build {
 
@@ -12,8 +13,13 @@ object SynergyBuild extends Build {
       version := "0.1-SNAPSHOT",
       scalaVersion := "2.10.3",
       
+      EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource,
+      
       // dependencies
-      libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.1"
+      libraryDependencies += "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
+      libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.1",
+      libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.2.1"
+
     )
   )
 }
