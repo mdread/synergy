@@ -1,9 +1,7 @@
 package net.caoticode.synergy.server
 
-import akka.actor.{ Actor, ActorRef }
+import akka.actor.{Actor, Terminated}
 import net.caoticode.synergy.Channel2ClientProtocol._
-import scala.collection.mutable.{ Set => MutableSet }
-import akka.actor.Terminated
 
 class Channel extends Actor with PushChannel with PullChannel {
 
