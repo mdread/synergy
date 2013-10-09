@@ -6,19 +6,19 @@ import net.caoticode.synergy.Channel2ClientProtocol._
 
 trait PullChannel {
   this: Actor =>
-  
+
   val pullSubscribers = null
-  
-  val pullReceive: PartialFunction[Any,Unit] = {
-    
-	case SubscribePull(routingTag) =>
+
+  val pullReceive: PartialFunction[Any, Unit] = {
+
+    case SubscribePull(routingTag) =>
       context.watch(sender)
-      // TODO: implement
+    // TODO: implement
 
     case UnsubscribePull(routingTag) =>
-      // TODO: implement
+    // TODO: implement
   }
-  
+
   def removePull(subscriber: ActorRef): Unit = {
     // TODO: implement
   }

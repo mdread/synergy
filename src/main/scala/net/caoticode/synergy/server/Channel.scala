@@ -1,11 +1,11 @@
 package net.caoticode.synergy.server
 
-import akka.actor.{Actor, Terminated}
+import akka.actor.{ Actor, Terminated }
 import net.caoticode.synergy.Channel2ClientProtocol._
 
 class Channel extends Actor with PushChannel with PullChannel {
 
-  val channelReceive: PartialFunction[Any,Unit] = {
+  val channelReceive: PartialFunction[Any, Unit] = {
     case Publish(msg, routingTag) =>
       for ((ref, tag) <- pushSubscribers if tag == routingTag)
         ref ! msg
@@ -14,7 +14,7 @@ class Channel extends Actor with PushChannel with PullChannel {
       removePush(subscriber)
       removePull(subscriber)
   }
-  
+
   def receive = channelReceive orElse pushReceive orElse pullReceive
-  
+
 }
