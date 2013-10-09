@@ -13,7 +13,7 @@ object Synergy extends App {
   
   val channel = client.joinOrCreateChannel("test")
   
-  channel.subscribeForPush[String]{ msg: String => 
+  channel.subscribeForPush[String](){ msg: String => 
     println("[] message recived: " + msg)
   }
   
