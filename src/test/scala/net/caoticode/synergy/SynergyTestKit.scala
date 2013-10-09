@@ -8,8 +8,7 @@ import org.scalatest.BeforeAndAfterAll
 import com.typesafe.config.ConfigFactory
 import akka.actor.actorRef2Scala
 import net.caoticode.synergy.Channel2ClientProtocol.Publish
-import net.caoticode.synergy.Channel2ClientProtocol.PushSubscription
-import net.caoticode.synergy.Channel2ClientProtocol.Subscribe
+import net.caoticode.synergy.Channel2ClientProtocol.SubscribePush
 import net.caoticode.synergy.ChannelMasterProtocol.ChannelCreate
 import net.caoticode.synergy.ChannelMasterProtocol.ChannelCreated
 import net.caoticode.synergy.ChannelMasterProtocol.ChannelExists
@@ -90,7 +89,7 @@ class SynergyTestKit(_system: ActorSystem) extends TestKit(_system) with WordSpe
       
       val loggerActor = system.actorOf(Props[LoggerActor])
       
-      channel.tell(Subscribe(PushSubscription), loggerActor)
+      channel.tell(SubscribePush(), loggerActor)
       
       EventFilter.info(message = "hello!", occurrences = 3) intercept {
     	  channel ! Publish("hello!")
@@ -106,7 +105,7 @@ class SynergyTestKit(_system: ActorSystem) extends TestKit(_system) with WordSpe
       
       val loggerActor = system.actorOf(Props[LoggerActor])
       
-      channel.tell(Subscribe(PushSubscription, "log"), loggerActor)
+      channel.tell(SubscribePush("log"), loggerActor)
       
       EventFilter.info(message = "hello!", occurrences = 1) intercept {
     	  channel ! Publish("hello!")

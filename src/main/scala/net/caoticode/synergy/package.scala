@@ -37,13 +37,11 @@ package object synergy {
   
   object Channel2ClientProtocol {
     private val DefaultRoutingTag = ""
-      
-    sealed trait SubscriptionPlan
-    case object PullSubscription extends SubscriptionPlan
-    case object PushSubscription extends SubscriptionPlan
     
-    case class Subscribe(kind: SubscriptionPlan, routingTag: String = DefaultRoutingTag)
-    case class Unsubscribe(kind: SubscriptionPlan, routingTag: String = DefaultRoutingTag)
+    case class SubscribePull(routingTag: String = DefaultRoutingTag)
+    case class SubscribePush(routingTag: String = DefaultRoutingTag)
+    case class UnsubscribePull(routingTag: String = DefaultRoutingTag)
+    case class UnsubscribePush(routingTag: String = DefaultRoutingTag)
     case class Publish(message: Any, routingTag: String = DefaultRoutingTag)
   }
 }

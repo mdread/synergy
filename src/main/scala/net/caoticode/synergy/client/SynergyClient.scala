@@ -69,7 +69,7 @@ class ChannelClient(channelRef: Future[ActorRef], system: ActorSystem) {
   }
 
   def subscribeForPush[T: Manifest](routingTag: String)(handler: (T => Unit)): Unit = {
-    channelRef.map { channel => channel.tell(Subscribe(PushSubscription, routingTag), system.actorOf(Props(new PushSubscriberActor[T](handler)))) }
+    channelRef.map { channel => channel.tell(SubscribePush(routingTag), system.actorOf(Props(new PushSubscriberActor[T](handler)))) }
   }
 
   // def subscribeForPull() = ???
