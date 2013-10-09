@@ -12,40 +12,29 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import akka.actor.Actor
 import akka.actor.Props
+import com.typesafe.config.Config
+import java.net.InetAddress
 
-case class ClientConfig(serverHost: String, serverPort: Int, myHost: String, myPort: Int)
-
-class SynergyClient(conf: Option[ClientConfig] = None) {
-
-  val referenceConfig = ConfigFactory.load()
-  val providedConfig = conf.map { config =>
-    ConfigFactory.parseString(s"""
-      akka.remote.netty.tcp.hostname="${config.myHost}"
-      akka.remote.netty.tcp.port=${config.myPort}
-      serverConnection = "akka.tcp://SynergyServer@${config.serverHost}:${config.serverPort}/user/channelmaster"
-     """)
-  }.getOrElse(ConfigFactory.empty())
-
-  val clientConfig = providedConfig.withFallback(referenceConfig.getConfig("SynergyClient")).withFallback(referenceConfig)
-  val system = ActorSystem("SynergyClient", clientConfig)
+class SynergyClient(serverHost: String, serverPort: Int) {
+  val system = ActorSystem("SynergyClient", configuration())
 
   implicit val timeout = Timeout(5 seconds)
   implicit val ex = system.dispatcher
 
-  val channelMaster = system.actorSelection(clientConfig.getString("serverConnection"))
+  val channelMaster = system.actorSelection(serverConnection(serverHost, serverPort))
 
   def createChannel(name: String): ChannelClient = {
     val res = (channelMaster ? ChannelCreate(name)).mapTo[ChannelCreated]
 
     new ChannelClient(res.map(_.channel), system)
   }
-  
+
   def joinOrCreateChannel(name: String): ChannelClient = {
     val res = (channelMaster ? ChannelJoinCreate(name)).mapTo[ChannelJoinSuccess]
 
     new ChannelClient(res.map(_.channel), system)
   }
-  
+
   def deleteChannel(name: String): Unit = {
     channelMaster ! ChannelDelete(name)
   }
@@ -53,6 +42,13 @@ class SynergyClient(conf: Option[ClientConfig] = None) {
   def shutdown(): Unit = {
     system.shutdown()
   }
+
+  private def configuration(): Config = {
+    val config = ConfigFactory.load()
+    config.getConfig("SynergyClient").withFallback(config)
+  }
+  
+  def serverConnection(host: String, port: Int) = s"akka.tcp://SynergyServer@$host:$port/user/channelmaster"
 }
 
 class ChannelClient(channelRef: Future[ActorRef], system: ActorSystem) {

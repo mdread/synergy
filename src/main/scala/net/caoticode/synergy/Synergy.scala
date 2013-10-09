@@ -2,14 +2,12 @@ package net.caoticode.synergy
 
 import net.caoticode.synergy.server.SynergyServer
 import net.caoticode.synergy.client.SynergyClient
-import net.caoticode.synergy.client.ClientConfig
-import net.caoticode.synergy.client.ClientConfig
 
 object Synergy extends App {
 
-//  val server = new SynergyServer()
+  val server = new SynergyServer()
 //  val client = new SynergyClient()
-  val client = new SynergyClient(Some(ClientConfig(myHost="192.168.18.24", myPort=2553, serverHost="192.168.18.46", serverPort=2552)))
+  val client = new SynergyClient("192.168.18.46", 2552)
   
   val channel = client.joinOrCreateChannel("test")
   
