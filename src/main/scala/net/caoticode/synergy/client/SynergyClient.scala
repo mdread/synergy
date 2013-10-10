@@ -1,47 +1,40 @@
 package net.caoticode.synergy.client
 
-import akka.actor.ActorSystem
-import com.typesafe.config.ConfigFactory
-import scala.concurrent.duration._
-import akka.util.Timeout
-import akka.pattern.ask
-import net.caoticode.synergy.ChannelMasterProtocol._
-import akka.actor.ActorRef
 import scala.concurrent.Await
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
-import akka.actor.Actor
-import akka.actor.Props
-import com.typesafe.config.Config
-import java.net.InetAddress
+import scala.concurrent.duration.DurationInt
+import com.typesafe.config.{Config, ConfigFactory}
+import akka.actor.{ActorSystem, TypedActor, TypedProps}
+import akka.actor.ActorSelection.toScala
+import akka.pattern.ask
+import akka.util.Timeout
+import net.caoticode.synergy.ChannelMasterProtocol.{ChannelCreate, ChannelCreated, ChannelDelete, ChannelJoinCreate, ChannelJoinSuccess}
+import akka.actor.ActorRef
+
 
 class SynergyClient(serverHost: String, serverPort: Int) {
   val system = ActorSystem("SynergyClient", configuration())
 
   implicit val timeout = Timeout(5 seconds)
-  implicit val ex = system.dispatcher
 
   val channelMaster = system.actorSelection(serverConnection(serverHost, serverPort))
 
   def createChannel(name: String): ChannelClient = {
-    val res = (channelMaster ? ChannelCreate(name)).mapTo[ChannelCreated]
-
-    new ChannelClient(res.map(_.channel), system)
+    val future = channelMaster ? ChannelCreate(name)
+    val channel = Await.result(future, timeout.duration).asInstanceOf[ChannelCreated].channel
+    
+    createChannelClient(channel)
   }
 
   def joinOrCreateChannel(name: String): ChannelClient = {
-    val res = (channelMaster ? ChannelJoinCreate(name)).mapTo[ChannelJoinSuccess]
-
-    new ChannelClient(res.map(_.channel), system)
+	val future = channelMaster ? ChannelJoinCreate(name)
+    val channel = Await.result(future, timeout.duration).asInstanceOf[ChannelJoinSuccess].channel
+    
+    createChannelClient(channel)
   }
 
-  def deleteChannel(name: String): Unit = {
-    channelMaster ! ChannelDelete(name)
-  }
+  def deleteChannel(name: String): Unit = channelMaster ! ChannelDelete(name)
 
-  def shutdown(): Unit = {
-    system.shutdown()
-  }
+  def shutdown(): Unit = system.shutdown()
 
   private def configuration(): Config = {
     val config = ConfigFactory.load()
@@ -49,26 +42,11 @@ class SynergyClient(serverHost: String, serverPort: Int) {
   }
   
   def serverConnection(host: String, port: Int) = s"akka.tcp://SynergyServer@$host:$port/user/channelmaster"
-}
-
-class ChannelClient(channelRef: Future[ActorRef], system: ActorSystem) {
-  import net.caoticode.synergy.Channel2ClientProtocol._
-
-  implicit val ex = system.dispatcher
-
-  def publish(message: Any, routingTag: String = ""): Unit = {
-    channelRef.map { channel => channel ! Publish(message, routingTag) }
-  }
-
-  def subscribeForPush[T: Manifest](routingTag: String = "")(handler: (T => Unit)): Unit = {
-    channelRef.map { channel => channel.tell(SubscribePush(routingTag), system.actorOf(Props(new PushSubscriberActor[T](handler)))) }
-  }
-
-  // def subscribeForPull() = ???
-
-  private class PushSubscriberActor[T](handler: (T => Unit)) extends Actor {
-    def receive = {
-      case x => handler(x.asInstanceOf[T])
-    }
+  
+  private def createChannelClient(channel: ActorRef): ChannelClient = {
+    TypedActor(system).typedActorOf(
+      TypedProps(classOf[ChannelClient], new ChannelClientImpl(channel))
+    )
   }
 }
+

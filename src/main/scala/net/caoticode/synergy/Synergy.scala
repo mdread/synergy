@@ -11,15 +11,15 @@ object Synergy extends App {
   
   val channel = client.joinOrCreateChannel("test")
   
-  channel.subscribeForPush[String](){ msg: String => 
+  channel.subscribePush[String](){ msg: String => 
     println("[] message recived: " + msg)
   }
   
-  channel.subscribeForPush[String]("myroute"){ msg: String => 
+  channel.subscribePush[String]("myroute"){ msg: String => 
     println("[myroute] message recived: " + msg)
   }
   
-  channel.subscribeForPush[String]("otheroute"){ msg: String => 
+  channel.subscribePush[String]("otheroute"){ msg: String => 
     println("[otheroute] message recived: " + msg)
   }
   
@@ -28,6 +28,9 @@ object Synergy extends App {
   channel.publish("message 3", "otheroute")
   channel.publish("message 4", "myroute")
   channel.publish("message 5", "myroute")
+  channel.publish("message 6")
+  
+  channel.unsubscribePush("myroute")
   
 //  client.shutdown
 //  server.shutdown

@@ -1,8 +1,8 @@
 package net.caoticode.synergy.server
 
-import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
-import akka.actor.Props
+
+import akka.actor.{ActorSystem, Props}
 
 class SynergyServer {
   
