@@ -43,5 +43,6 @@ package object synergy {
     case class UnsubscribePull(routingTag: String = DefaultRoutingTag)
     case class UnsubscribePush(routingTag: String = DefaultRoutingTag)
     case class Publish(message: Any, routingTag: String = DefaultRoutingTag)
+    case object InitiateShutdown
   }
 }

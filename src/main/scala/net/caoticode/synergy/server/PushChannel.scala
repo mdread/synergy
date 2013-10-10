@@ -3,6 +3,7 @@ package net.caoticode.synergy.server
 import scala.collection.mutable.{ Set => MutableSet }
 import akka.actor.{ Actor, ActorRef, ActorContext }
 import net.caoticode.synergy.Channel2ClientProtocol._
+import akka.actor.PoisonPill
 
 trait PushChannel {
   this: Actor =>
@@ -16,6 +17,7 @@ trait PushChannel {
       pushSubscribers.add((sender, routingTag))
 
     case UnsubscribePush(routingTag) =>
+      sender ! PoisonPill
       pushSubscribers.remove((sender, routingTag))
   }
 

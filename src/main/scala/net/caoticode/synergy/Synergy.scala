@@ -30,7 +30,12 @@ object Synergy extends App {
   channel.publish("message 5", "myroute")
   channel.publish("message 6")
   
-  channel.unsubscribePush("myroute")
+  //channel.unsubscribePush("myroute")
+  client.leaveChannel(channel)
+  
+  channel.publish("message to nonexistent route 1", "myroute")
+  channel.publish("message to nonexistent route 2", "myroute")
+  channel.publish("message 7")
   
 //  client.shutdown
 //  server.shutdown

@@ -8,6 +8,7 @@ import akka.actor.ActorSelection.toScala
 import akka.pattern.ask
 import akka.util.Timeout
 import net.caoticode.synergy.ChannelMasterProtocol.{ChannelCreate, ChannelCreated, ChannelDelete, ChannelJoinCreate, ChannelJoinSuccess}
+import net.caoticode.synergy.Channel2ClientProtocol.InitiateShutdown
 import akka.actor.ActorRef
 
 
@@ -36,6 +37,10 @@ class SynergyClient(serverHost: String, serverPort: Int) {
 
   def shutdown(): Unit = system.shutdown()
 
+  def leaveChannel(channel: ChannelClient): Unit = {
+    TypedActor(system).getActorRefFor(channel) ! InitiateShutdown
+  }
+  
   private def configuration(): Config = {
     val config = ConfigFactory.load()
     config.getConfig("SynergyClient").withFallback(config)
